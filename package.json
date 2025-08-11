@@ -271,7 +271,9 @@
 		"typescript": "^2.4.1",
 		"vscode": "^1.1.34"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@types/vscode": "^1.30.0"
+	},
 	"__metadata": {
 		"installedTimestamp": 1751409197640,
 		"targetPlatform": "undefined",
