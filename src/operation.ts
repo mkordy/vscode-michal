@@ -40,6 +40,9 @@ export class Operation {
             },
             'jupyterExecCodeAboveInteractive': () => {
                 this.editor.jupyterExecCodeAboveInteractive()
+            },
+            'jupyterExecLineOrRegionAndMaybeStep': () => {
+                this.editor.jupyterExecLineOrRegionAndMaybeStep()
             }
         };
     }

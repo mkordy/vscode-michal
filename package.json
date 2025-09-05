@@ -1,10 +1,10 @@
 {
-	"name": "vscode-emacs-friendly-michal",
-	"displayName": "Emacs Friendly Keymap Michal",
-	"description": "Emacs keybindings and selection, friendly interaction with the system clipboard.",
+	"name": "vscode-michal",
+	"displayName": "Michal vscode setup",
+	"description": "Emacs selection and other setup.",
 	"icon": "emacs_pacifica.png",
 	"version": "0.9.0",
-	"publisher": "lfs",
+	"publisher": "michal",
 	"homepage": "https://github.com/mkordy/vscode-emacs-friendly",
 	"repository": {
 		"type": "git",
@@ -236,7 +236,23 @@
 				"key": "ctrl+space",
 				"command": "emacs.enterMarkMode",
 				"when": "editorTextFocus"
-			}	
+			},
+			{
+				"key": "ctrl+enter",
+				"command": "emacs.jupyterExecLineOrRegionAndMaybeStep",
+				"when": "editorTextFocus && !findWidgetVisible && isWorkspaceTrusted &&  !findInputFocussed && !isCompositeNotebook && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
+			},
+			{
+				"key": "ctrl+s ctrl+shift+alt+w",
+				"command": "emacs.jupyterExecCodeAboveInteractive",
+				"when": "editorTextFocus && !findWidgetVisible && isWorkspaceTrusted &&  !findInputFocussed && !isCompositeNotebook && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
+			}
+		],
+		"commands": [
+			{
+				"command": "emacs.jupyterExecLineOrRegionAndMaybeStep",
+				"title": "emacs.jupyterExecLineOrRegionAndMaybeStep"
+			}
 		]
 	},
 	"scripts": {

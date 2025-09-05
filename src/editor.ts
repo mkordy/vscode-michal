@@ -55,9 +55,25 @@ export class Editor {
 		return vscode.window.activeTextEditor.selection;
 	}
 
+	isRegionSelected(): boolean {
+		return !this.getSelection().isEmpty;
+	}
+
 	getSelectionText(): string {
 		let r = this.getSelectionRange()
 		return r ? vscode.window.activeTextEditor.document.getText(r) : ''
+	}
+
+	getLineText(): string {
+		const lineNumber = vscode.window.activeTextEditor.selection.active.line;
+		return vscode.window.activeTextEditor.document.lineAt(lineNumber).text;	
+	}
+
+	getSelectionOrLineText(): string {
+		if (this.isRegionSelected()) {
+			return this.getSelectionText();
+		}
+		return this.getLineText();
 	}
 
 	setSelection(start: vscode.Position, end: vscode.Position): void {
@@ -68,7 +84,16 @@ export class Editor {
 	getCurrentPos(): vscode.Position {
 		return vscode.window.activeTextEditor.selection.active
 	}
+	
+	getTopPos(): vscode.Position {
+		return new vscode.Position(0, 0)
+	}
 
+	getTextFromTopToHere(): string {
+		const from_here_to_top = new vscode.Range(this.getTopPos(), this.getCurrentPos());
+		return vscode.window.activeTextEditor.document.getText(from_here_to_top);
+	}
+	
 	// Kill to end of line
 	async kill(): Promise<boolean> {
 		// Ignore whatever we have selected before
@@ -217,16 +242,24 @@ export class Editor {
 		vscode.commands.executeCommand("emacs.cursorDown");
 	}
 
+	showMessage(message: string): void {
+		vscode.window.showInformationMessage(message);
+	}
+
 	async jupyterExecCodeAboveInteractive(): Promise<void> {
-		const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
-		const position =  this.getCurrentPos();
-		const start = new vscode.Position(0, 0);
-		const from_here_to_top = new vscode.Range(start, position);
-		const code_to_execute = vscode.window.activeTextEditor.document.getText(from_here_to_top);
-		await vscode.commands.executeCommand("jupyter.execSelectionInteractive", code_to_execute);
-		vscode.window.showInformationMessage(code_to_execute);
+		this.executeCodeInJupyter(this.getTextFromTopToHere());
+	}
+
+	async executeCodeInJupyter(code: string): Promise<void> {
+		vscode.commands.executeCommand("jupyter.execSelectionInteractive", code);
+	}	
+	
+	async jupyterExecLineOrRegionAndMaybeStep(): Promise<void> {
+		const sth_selected = this.isRegionSelected();
+		this.executeCodeInJupyter(this.getSelectionOrLineText());
+		if (!sth_selected) {
+			// if line was selected then step one line down.
+			vscode.commands.executeCommand("cursorDown");
+		}
 	}
 }

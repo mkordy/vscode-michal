@@ -17,6 +17,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
             // Jupyter
             "jupyterExecCodeAboveInteractive",
+            "jupyterExecLineOrRegionAndMaybeStep"
         ],
         cursorMoves: string[] = [
             "cursorUp", "cursorDown", "cursorLeft", "cursorRight",
