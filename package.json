@@ -52,19 +52,24 @@
 				"when": "terminalFocus"
 			},
 			{
-				"key": "up",
-				"command": "emacs.cursorUp",
-				"when": "editorTextFocus && !suggestWidgetVisible"
-			},
-			{
-				"key": "down",
-				"command": "emacs.cursorDown",
-				"when": "editorTextFocus && !suggestWidgetVisible"
-			},
-			{
 				"key": "down",
 				"command": "emacs.cursorDown",
 				"when": "terminalFocus"
+			},
+			{
+				"key": "down",
+				"command": "emacs.cursorDown",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "up",
+				"command": "emacs.cursorUp",
+				"when": "terminalFocus"
+			},
+			{
+				"key": "up",
+				"command": "emacs.cursorUp",
+				"when": "editorTextFocus"
 			},
 			{
 				"key": "home",
@@ -101,16 +106,6 @@
 			{
 				"key": "ctrl+left",
 				"command": "emacs.cursorWordPartLeft"
-			},
-			{
-				"key": "pagedown",
-				"command": "emacs.cursorPageDown",
-				"when": "editorTextFocus && !suggestWidgetVisible"
-			},
-			{
-				"key": "pageup",
-				"command": "emacs.cursorPageUp",
-				"when": "editorTextFocus && !suggestWidgetVisible"
 			},
 			{
 				"key": "alt+o",
@@ -171,6 +166,7 @@
 				"command": "closeFindWidget",
 				"when": "editorFocus && findWidgetVisible"
 			},
+
 			{
 				"key": "ctrl+g",
 				"command": "emacs.exitMarkMode",
@@ -240,22 +236,7 @@
 				"key": "ctrl+space",
 				"command": "emacs.enterMarkMode",
 				"when": "editorTextFocus"
-			},
-			{
-				"key": "ctrl+'",
-				"command": "editor.action.triggerSuggest",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "ctrl+'",
-				"command": "toggleSuggestionDetails",
-				"when": "editorTextFocus && suggestWidgetVisible"
-			},
-			{
-				"key": "ctrl+shift+'",
-				"command": "editor.action.triggerParameterHints",
-				"when": "editorTextFocus"
-			}
+			}	
 		]
 	},
 	"scripts": {

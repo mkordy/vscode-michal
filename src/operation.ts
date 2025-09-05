@@ -37,6 +37,9 @@ export class Operation {
             },
             'C-l': () => {
                 this.editor.scrollLineToCenterTopBottom()
+            },
+            'jupyterExecCodeAboveInteractive': () => {
+                this.editor.jupyterExecCodeAboveInteractive()
             }
         };
     }

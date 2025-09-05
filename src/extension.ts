@@ -14,11 +14,15 @@ export function activate(context: vscode.ExtensionContext): void {
 
             // Navigation
             "C-l",
+
+            // Jupyter
+            "jupyterExecCodeAboveInteractive",
         ],
         cursorMoves: string[] = [
             "cursorUp", "cursorDown", "cursorLeft", "cursorRight",
             "cursorHome", "cursorEnd",
             "cursorWordLeft", "cursorWordRight",
+            "cursorWordPartLeft", "cursorWordPartRight",
             "cursorPageDown", "cursorPageUp",
             "cursorTop", "cursorBottom"
         ];

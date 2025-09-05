@@ -216,4 +216,17 @@ export class Editor {
 		vscode.commands.executeCommand("emacs.cursorHome");
 		vscode.commands.executeCommand("emacs.cursorDown");
 	}
+
+	async jupyterExecCodeAboveInteractive(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+		const position =  this.getCurrentPos();
+		const start = new vscode.Position(0, 0);
+		const from_here_to_top = new vscode.Range(start, position);
+		const code_to_execute = vscode.window.activeTextEditor.document.getText(from_here_to_top);
+		await vscode.commands.executeCommand("jupyter.execSelectionInteractive", code_to_execute);
+		vscode.window.showInformationMessage(code_to_execute);
+	}
 }
