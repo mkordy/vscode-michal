@@ -270,22 +270,12 @@ export class Editor {
 		}
 	}
 
-	getIndentSize(): number {
-		// return 1;
-		const editor = vscode.window.activeTextEditor;
-		const indentSize = editor.options.tabSize;
-		if (typeof indentSize === 'string'){
-			return 4;
-		}
-		return indentSize;
-	}
 	getCurrentColumn() {
 		const editor = vscode.window.activeTextEditor;
 		return editor.selection.active.character;
 	}
 	getIndentLevelBasedOnCursorLocation(): number {
 		return this.getCurrentColumn()
-		// return Math.floor(this.getCurrentColumn() / this.getIndentSize()) + 1;
 	}
 
 	/**
@@ -293,7 +283,6 @@ export class Editor {
 	 * @param level The indent level to fold (1-based).
 	 */
 	foldAtIndentLevel(level: number): void {
-		this.showMessage("AA")
 		const editor = vscode.window.activeTextEditor;
 		const doc = editor.document;
 
@@ -301,8 +290,6 @@ export class Editor {
 		let previousIndentLevel = 0
 		for (let i = 0; i < doc.lineCount; i++) {
 			const line = doc.lineAt(i);
-			// Calculate the indent level for this line
-			// const lineIndentLevel = Math.floor(line.firstNonWhitespaceCharacterIndex / indentSize) + 1;
 			const lineIndentLevel = line.firstNonWhitespaceCharacterIndex;
 			if ((lineIndentLevel > level) && (lineIndentLevel > previousIndentLevel)) {
 				lines.push(Math.max(i - 1, 0))  // I don't know whey I need to pass "i-1" here, but it works - I pass the previous line.
@@ -311,8 +298,6 @@ export class Editor {
 			previousIndentLevel = lineIndentLevel
 			
 		}
-		// this.showMessage(lines.toString())		
-		// this.showMessage(`lines.length ${lines.length}`)
 	}
 	getDocumentContent() {
 		const editor = vscode.window.activeTextEditor;
@@ -351,5 +336,5 @@ export class Editor {
 }
 
 function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
