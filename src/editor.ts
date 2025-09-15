@@ -32,6 +32,7 @@ export class Editor {
 			}
 			this.justDidKill = false
 			this.justDidFolding = false
+			vscode.commands.executeCommand('michal.exitMarkMode');
 		})
 		vscode.window.onDidChangeTextEditorSelection(event => {
 			this.centerState = RecenterPosition.Middle
