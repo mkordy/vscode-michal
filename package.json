@@ -5,12 +5,12 @@
 	"icon": "emacs_pacifica.png",
 	"version": "0.9.0",
 	"publisher": "michal",
-	"homepage": "https://github.com/mkordy/vscode-emacs-friendly",
+	"homepage": "https://github.com/mkordy/vscode-michal",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/mkordy/vscode-emacs-friendly"
+		"url": "https://github.com/mkordy/vscode-michal"
 	},
-	"bugs": "https://github.com/mkordy/vscode-emacs-friendly/issues",
+	"bugs": "https://github.com/mkordy/vscode-michal/issues",
 	"engines": {
 		"vscode": "^1.30.0"
 	},
@@ -19,7 +19,7 @@
 		"Keymaps"
 	],
 	"keywords": [
-		"emacs",
+		"michal",
 		"shortcuts",
 		"keybindings",
 		"behavior",
@@ -33,88 +33,88 @@
 		"keybindings": [
 			{
 				"key": "right",
-				"command": "emacs.cursorRight",
+				"command": "michal.cursorRight",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "right",
-				"command": "emacs.cursorRight",
+				"command": "michal.cursorRight",
 				"when": "terminalFocus"
 			},
 			{
 				"key": "left",
-				"command": "emacs.cursorLeft",
+				"command": "michal.cursorLeft",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "left",
-				"command": "emacs.cursorLeft",
+				"command": "michal.cursorLeft",
 				"when": "terminalFocus"
 			},
 			{
 				"key": "down",
-				"command": "emacs.cursorDown",
+				"command": "michal.cursorDown",
 				"when": "terminalFocus"
 			},
 			{
 				"key": "down",
-				"command": "emacs.cursorDown",
+				"command": "michal.cursorDown",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "up",
-				"command": "emacs.cursorUp",
+				"command": "michal.cursorUp",
 				"when": "terminalFocus"
 			},
 			{
 				"key": "up",
-				"command": "emacs.cursorUp",
+				"command": "michal.cursorUp",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "home",
-				"command": "emacs.cursorHome",
+				"command": "michal.cursorHome",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "home",
-				"command": "emacs.cursorHome",
+				"command": "michal.cursorHome",
 				"when": "terminalFocus"
 			},
 			{
 				"key": "end",
-				"command": "emacs.cursorEnd",
+				"command": "michal.cursorEnd",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "end",
-				"command": "emacs.cursorEnd",
+				"command": "michal.cursorEnd",
 				"when": "terminalFocus"
 			},
 			{
 				"key": "ctrl+shift+alt+q ctrl+right",
-				"command": "emacs.cursorWordRight"
+				"command": "michal.cursorWordRight"
 			},
 			{
 				"key": "ctrl+right",
-				"command": "emacs.cursorWordPartRight"
+				"command": "michal.cursorWordPartRight"
 			},
 			{
 				"key": "ctrl+shift+alt+q ctrl+left",
-				"command": "emacs.cursorWordLeft"
+				"command": "michal.cursorWordLeft"
 			},
 			{
 				"key": "ctrl+left",
-				"command": "emacs.cursorWordPartLeft"
+				"command": "michal.cursorWordPartLeft"
 			},
 			{
 				"key": "alt+o",
-				"command": "emacs.cursorBottom",
+				"command": "michal.cursorBottom",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "alt+u",
-				"command": "emacs.cursorTop",
+				"command": "michal.cursorTop",
 				"when": "editorTextFocus"
 			},
 			{
@@ -158,7 +158,7 @@
 			},
 			{
 				"key": "ctrl+g",
-				"command": "emacs.C-g",
+				"command": "michal.C-g",
 				"when": "editorTextFocus"
 			},
 			{
@@ -169,7 +169,7 @@
 
 			{
 				"key": "ctrl+g",
-				"command": "emacs.exitMarkMode",
+				"command": "michal.exitMarkMode",
 				"when": "editorTextFocus"
 			},
 			{
@@ -234,24 +234,29 @@
 			},
 			{
 				"key": "ctrl+space",
-				"command": "emacs.enterMarkMode",
+				"command": "michal.enterMarkMode",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "ctrl+enter",
-				"command": "emacs.jupyterExecLineOrRegionAndMaybeStep",
+				"command": "michal.jupyterExecLineOrRegionAndMaybeStep",
 				"when": "editorTextFocus && !findWidgetVisible && isWorkspaceTrusted &&  !findInputFocussed && !isCompositeNotebook && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
 			},
 			{
 				"key": "ctrl+s ctrl+shift+alt+w",
-				"command": "emacs.jupyterExecCodeAboveInteractive",
+				"command": "michal.jupyterExecCodeAboveInteractive",
 				"when": "editorTextFocus && !findWidgetVisible && isWorkspaceTrusted &&  !findInputFocussed && !isCompositeNotebook && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
+			},
+			{
+				"key": "ctrl+alt+;",
+				"command": "michal.toggleFold",
+				"when": "editorTextFocus"
 			}
 		],
 		"commands": [
 			{
-				"command": "emacs.jupyterExecLineOrRegionAndMaybeStep",
-				"title": "emacs.jupyterExecLineOrRegionAndMaybeStep"
+				"command": "michal.test",
+				"title": "michal.test"
 			}
 		]
 	},

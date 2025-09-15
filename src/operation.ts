@@ -43,6 +43,12 @@ export class Operation {
             },
             'jupyterExecLineOrRegionAndMaybeStep': () => {
                 this.editor.jupyterExecLineOrRegionAndMaybeStep()
+            },
+            'toggleFold': () => {
+                this.editor.toggleFold()
+            },
+            'test': () => {
+                this.editor.test()
             }
         };
     }

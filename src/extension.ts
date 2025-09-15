@@ -17,7 +17,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
             // Jupyter
             "jupyterExecCodeAboveInteractive",
-            "jupyterExecLineOrRegionAndMaybeStep"
+            "jupyterExecLineOrRegionAndMaybeStep",
+
+            "toggleFold",
+            "test"            
         ],
         cursorMoves: string[] = [
             "cursorUp", "cursorDown", "cursorLeft", "cursorRight",
@@ -34,7 +37,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     cursorMoves.forEach(element => {
         context.subscriptions.push(vscode.commands.registerCommand(
-            "emacs."+element, () => {
+            "michal."+element, () => {
                 if (inMarkMode) {
                     markHasMoved  = true;
                 }
@@ -55,7 +58,7 @@ export function deactivate(): void {
 
 function initMarkMode(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand(
-        'emacs.enterMarkMode', () => {
+        'michal.enterMarkMode', () => {
             if (inMarkMode && !markHasMoved) {
                 inMarkMode = false;
             } else {
@@ -67,7 +70,7 @@ function initMarkMode(context: vscode.ExtensionContext): void {
     );
 
     context.subscriptions.push(vscode.commands.registerCommand(
-        'emacs.exitMarkMode', () => {
+        'michal.exitMarkMode', () => {
             const selections = vscode.window.activeTextEditor.selections;
             const hasMultipleSelecitons = selections.length > 1;
             if (hasMultipleSelecitons) {
@@ -94,7 +97,7 @@ function initMarkMode(context: vscode.ExtensionContext): void {
 }
 
 function registerCommand(commandName: string, op: Operation): vscode.Disposable {
-    return vscode.commands.registerCommand("emacs." + commandName, op.getCommand(commandName));
+    return vscode.commands.registerCommand("michal." + commandName, op.getCommand(commandName));
 }
 
 function initSelection(): void {

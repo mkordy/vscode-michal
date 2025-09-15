@@ -12,6 +12,11 @@ export class Editor {
 	private justDidKill: boolean
 	private centerState: RecenterPosition
 
+	private folded: boolean = false
+	private justDidFolding: boolean = false
+	private positionAfterFold: vscode.Position
+	private selectionBeforeFold: vscode.Selection
+
 	constructor() {
 		this.justDidKill = false
 		this.lastKill = null
@@ -19,12 +24,14 @@ export class Editor {
 
 		vscode.window.onDidChangeActiveTextEditor(event => {
 			this.lastKill = null
+			this.justDidFolding = false
 		})
 		vscode.workspace.onDidChangeTextDocument(event => {
 			if (!this.justDidKill) {
 				this.lastKill = null
 			}
 			this.justDidKill = false
+			this.justDidFolding = false
 		})
 		vscode.window.onDidChangeTextEditorSelection(event => {
 			this.centerState = RecenterPosition.Middle
@@ -97,7 +104,7 @@ export class Editor {
 	// Kill to end of line
 	async kill(): Promise<boolean> {
 		// Ignore whatever we have selected before
-		await vscode.commands.executeCommand("emacs.exitMarkMode")
+		await vscode.commands.executeCommand("michal.exitMarkMode")
 
 		let startPos = this.getCurrentPos(),
 			isOnLastLine = Editor.isOnLastLine()
@@ -132,7 +139,7 @@ export class Editor {
 
 	copy(): void {
 		vscode.env.clipboard.writeText(this.getSelectionText())
-		vscode.commands.executeCommand("emacs.exitMarkMode")
+		vscode.commands.executeCommand("michal.exitMarkMode")
 	}
 
 	async cut(appendClipboard?: boolean): Promise<boolean> {
@@ -143,7 +150,7 @@ export class Editor {
 			vscode.env.clipboard.writeText(this.getSelectionText())
 		}
 		let t = Editor.delete(this.getSelectionRange());
-		vscode.commands.executeCommand("emacs.exitMarkMode");
+		vscode.commands.executeCommand("michal.exitMarkMode");
 		return t
 	}
 
@@ -151,7 +158,7 @@ export class Editor {
 		this.justDidKill = false
 		return Promise.all([
 			vscode.commands.executeCommand("editor.action.clipboardPasteAction"),
-			vscode.commands.executeCommand("emacs.exitMarkMode")])
+			vscode.commands.executeCommand("michal.exitMarkMode")])
 	}
 
 	undo(): void {
@@ -210,7 +217,7 @@ export class Editor {
 	}
 
 	deleteLine() : void {
-		vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
+		vscode.commands.executeCommand("michal.exitMarkMode"); // emulate Emacs
 		vscode.commands.executeCommand("editor.action.deleteLines");
 	}
 
@@ -238,8 +245,8 @@ export class Editor {
 
 	breakLine() {
 		vscode.commands.executeCommand("lineBreakInsert");
-		vscode.commands.executeCommand("emacs.cursorHome");
-		vscode.commands.executeCommand("emacs.cursorDown");
+		vscode.commands.executeCommand("michal.cursorHome");
+		vscode.commands.executeCommand("michal.cursorDown");
 	}
 
 	showMessage(message: string): void {
@@ -262,4 +269,87 @@ export class Editor {
 			vscode.commands.executeCommand("cursorDown");
 		}
 	}
+
+	getIndentSize(): number {
+		// return 1;
+		const editor = vscode.window.activeTextEditor;
+		const indentSize = editor.options.tabSize;
+		if (typeof indentSize === 'string'){
+			return 4;
+		}
+		return indentSize;
+	}
+	getCurrentColumn() {
+		const editor = vscode.window.activeTextEditor;
+		return editor.selection.active.character;
+	}
+	getIndentLevelBasedOnCursorLocation(): number {
+		return this.getCurrentColumn()
+		// return Math.floor(this.getCurrentColumn() / this.getIndentSize()) + 1;
+	}
+
+	/**
+	 * Folds all lines at the specified indent level.
+	 * @param level The indent level to fold (1-based).
+	 */
+	foldAtIndentLevel(level: number): void {
+		this.showMessage("AA")
+		const editor = vscode.window.activeTextEditor;
+		const doc = editor.document;
+
+		let lines = []
+		let previousIndentLevel = 0
+		for (let i = 0; i < doc.lineCount; i++) {
+			const line = doc.lineAt(i);
+			// Calculate the indent level for this line
+			// const lineIndentLevel = Math.floor(line.firstNonWhitespaceCharacterIndex / indentSize) + 1;
+			const lineIndentLevel = line.firstNonWhitespaceCharacterIndex;
+			if ((lineIndentLevel > level) && (lineIndentLevel > previousIndentLevel)) {
+				lines.push(Math.max(i - 1, 0))  // I don't know whey I need to pass "i-1" here, but it works - I pass the previous line.
+			}
+			vscode.commands.executeCommand('editor.fold', { selectionLines: lines, levels: 1 });
+			previousIndentLevel = lineIndentLevel
+			
+		}
+		// this.showMessage(lines.toString())		
+		// this.showMessage(`lines.length ${lines.length}`)
+	}
+	getDocumentContent() {
+		const editor = vscode.window.activeTextEditor;
+		return editor.document.getText();
+	}
+	
+	async toggleFold(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		
+		if (this.folded) {
+			const restorePosition = this.justDidFolding && this.getCurrentPos() === this.positionAfterFold
+			vscode.commands.executeCommand("editor.unfoldAll");		
+			if (restorePosition) {
+				editor.selection = this.selectionBeforeFold
+			} 
+			this.folded = false;
+			this.justDidFolding = false;			
+		} else {			
+			this.selectionBeforeFold = this.getSelection();
+			let level = this.getIndentLevelBasedOnCursorLocation();
+			this.foldAtIndentLevel(level);
+			await sleep(200); 
+			this.positionAfterFold = this.getCurrentPos();
+			this.folded = true;
+			this.justDidFolding = true;
+		}		
+	}
+
+	async test(): Promise<void> {
+		// this.toggleFold()
+		let level = this.getIndentLevelBasedOnCursorLocation();
+		const lineNumber = vscode.window.activeTextEditor.selection.active.line;
+		let line =  vscode.window.activeTextEditor.document.lineAt(lineNumber)
+		this.showMessage(`${this.getIndentLevelBasedOnCursorLocation()} ${line.firstNonWhitespaceCharacterIndex} `)
+	}
+}
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
