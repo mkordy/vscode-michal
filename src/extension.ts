@@ -3,13 +3,19 @@ import {Operation} from './operation';
 
 var inMarkMode: boolean = false;
 var markHasMoved: boolean = false;
+
+function getLastNamePart(str: string): string {
+    const parts = str.split('.');
+    return parts[parts.length - 1]; // 'indentLines'
+}
+
 export function activate(context: vscode.ExtensionContext): void {
     let op = new Operation(),
         commandList: string[] = [
             "C-g",
 
             // Edit
-            "C-k", "C-w", "M-w", "C-y", "C-x_C-o",
+            "C-k", "C-w", "copy", "C-y", "C-x_C-o",
             "C-/", "C-j", "C-S_bs",
 
             // Navigation
@@ -19,7 +25,9 @@ export function activate(context: vscode.ExtensionContext): void {
             "jupyterExecCodeAboveInteractive",
             "jupyterExecLineOrRegionAndMaybeStep",
 
+            //other
             "toggleFold",
+            "getMultilineFromRegion",
             "test"            
         ],
         cursorMoves: string[] = [
@@ -29,10 +37,27 @@ export function activate(context: vscode.ExtensionContext): void {
             "cursorWordPartLeft", "cursorWordPartRight",
             "cursorPageDown", "cursorPageUp",
             "cursorTop", "cursorBottom"
+        ],
+        commandsThatDoNotRemoveMark: string[] = [
+            'editor.action.indentLines',
+            'outdent',
+            "editor.action.addCommentLine",
+            "editor.action.removeCommentLine",
+            "undo",
+            "redo"
         ];
 
     commandList.forEach(commandName => {
         context.subscriptions.push(registerCommand(commandName, op));
+    });
+
+    commandsThatDoNotRemoveMark.forEach(commandName => {
+
+        context.subscriptions.push(vscode.commands.registerCommand(
+            "michal."+ getLastNamePart(commandName), () => {
+                op.editor.executeWithoutRemovingMark(commandName)
+            })
+        )
     });
 
     cursorMoves.forEach(element => {
@@ -77,6 +102,32 @@ function initMarkMode(context: vscode.ExtensionContext): void {
                 const allSelectionsAreEmpty = selections.every(selection => selection.isEmpty);
                 if (allSelectionsAreEmpty) {
                     vscode.commands.executeCommand("removeSecondaryCursors");
+                } else {
+                    // initSelection() is used here instead of `executeCommand("cancelSelection")`
+                    // because `cancelSelection` command not only cancels selection state
+                    // but also removes secondary cursors though these should remain in this case.
+                    initSelection();
+                }
+            } else {
+                // This `executeCommand("cancelSelection")` may be able to be replaced with `initSelection()`,
+                // however, the core command is used here to follow its updates with ease.
+                vscode.commands.executeCommand("cancelSelection");
+            }
+
+            if (inMarkMode) {
+                inMarkMode = false;
+            }
+        })
+    );
+
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'michal.exitMarkModeOnEdit', () => {
+            const selections = vscode.window.activeTextEditor.selections;
+            const hasMultipleSelecitons = selections.length > 1;
+            if (hasMultipleSelecitons) {
+                const allSelectionsAreEmpty = selections.every(selection => selection.isEmpty);
+                if (allSelectionsAreEmpty) {
+                    // vscode.commands.executeCommand("removeSecondaryCursors");
                 } else {
                     // initSelection() is used here instead of `executeCommand("cancelSelection")`
                     // because `cancelSelection` command not only cancels selection state

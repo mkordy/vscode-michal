@@ -251,7 +251,12 @@
 				"key": "ctrl+alt+;",
 				"command": "michal.toggleFold",
 				"when": "editorTextFocus"
-			}
+			},
+			{
+				"key": "ctrl+alt+,",
+				"command": "michal.getMultilineFromRegion",
+				"when": "editorFocus"
+			} 
 		],
 		"commands": [
 			{

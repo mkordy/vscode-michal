@@ -1,7 +1,7 @@
 import {Editor} from './editor';
 
 export class Operation {
-    private editor: Editor;
+    public editor: Editor;
     private commandList: { [key: string]: (...args: any[]) => any, thisArgs?: any } = {};
 
     constructor() {
@@ -13,7 +13,7 @@ export class Operation {
             'C-w': () => {
                 this.editor.cut()
             },
-            'M-w': () => {
+            'copy': () => {
                 this.editor.copy()
             },
             'C-y': () => {
@@ -49,6 +49,9 @@ export class Operation {
             },
             'test': () => {
                 this.editor.test()
+            },
+            'getMultilineFromRegion': () => {
+                this.editor.getMultilineFromRegion()
             }
         };
     }

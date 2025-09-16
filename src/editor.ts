@@ -16,6 +16,10 @@ export class Editor {
 	private justDidFolding: boolean = false
 	private positionAfterFold: vscode.Position
 	private selectionBeforeFold: vscode.Selection
+	public removeMarkOnEdit: boolean = true
+	private visibleLinesBeforeFold: number[] = []
+	private counter = 0
+	private position
 
 	constructor() {
 		this.justDidKill = false
@@ -25,6 +29,7 @@ export class Editor {
 		vscode.window.onDidChangeActiveTextEditor(event => {
 			this.lastKill = null
 			this.justDidFolding = false
+			this.visibleLinesBeforeFold = []
 		})
 		vscode.workspace.onDidChangeTextDocument(event => {
 			if (!this.justDidKill) {
@@ -32,13 +37,21 @@ export class Editor {
 			}
 			this.justDidKill = false
 			this.justDidFolding = false
-			vscode.commands.executeCommand('michal.exitMarkMode');
+			if (this.removeMarkOnEdit) {
+				vscode.commands.executeCommand('michal.exitMarkModeOnEdit'); // -- fix that to not execute it after block comment or block indent
+			}
 		})
 		vscode.window.onDidChangeTextEditorSelection(event => {
 			this.centerState = RecenterPosition.Middle
 		})
 	}
 
+	async executeWithoutRemovingMark(command: string): Promise<void> {
+		this.removeMarkOnEdit = false
+		await vscode.commands.executeCommand(command)
+		this.removeMarkOnEdit = true
+	}
+	
 	static isOnLastLine(): boolean {
 		return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
 	}
@@ -308,7 +321,7 @@ export class Editor {
 	async toggleFold(): Promise<void> {
 		const editor = vscode.window.activeTextEditor;
 		
-		if (this.folded) {
+		if (this.folded) { // unfold
 			const restorePosition = this.justDidFolding && this.getCurrentPos() === this.positionAfterFold
 			vscode.commands.executeCommand("editor.unfoldAll");		
 			if (restorePosition) {
@@ -316,8 +329,10 @@ export class Editor {
 			} 
 			this.folded = false;
 			this.justDidFolding = false;			
-		} else {			
+		} else { // fold
 			this.selectionBeforeFold = this.getSelection();
+			this.visibleLinesBeforeFold = this.getVisibleLines();
+			
 			let level = this.getIndentLevelBasedOnCursorLocation();
 			this.foldAtIndentLevel(level);
 			await sleep(200); 
@@ -327,15 +342,83 @@ export class Editor {
 		}		
 	}
 
+	getVisibleLines(): number[] {
+		const editor = vscode.window.activeTextEditor;
+		const visibleLines: number[] = [];
+		for (const range of editor.visibleRanges) {
+			for (let line = range.start.line; line <= range.end.line; line++) {
+				visibleLines.push(line);
+			}
+		}
+		return visibleLines;
+	}
+
+	showLineAtTop(line_number: number) {
+		const editor = vscode.window.activeTextEditor;
+		const range = editor.document.lineAt(line_number).range;
+		editor.revealRange(range,  vscode.TextEditorRevealType.AtTop);
+	}
+	advancePosition(position: vscode.Position, characterDelta: number) {
+		const doc = vscode.window.activeTextEditor.document
+		return doc.validatePosition(position.translate(0, characterDelta))
+	}
+	getMultilineFromRegion() {
+		const editor = vscode.window.activeTextEditor
+		const selections = editor.selections;
+		const hasMultipleSelecitons = selections.length > 1;
+		if (hasMultipleSelecitons) return;
+		const selection = editor.selection;
+		const startLine = selection.start.line;
+		const endLine = selection.end.line;
+		if (startLine == endLine) return;
+
+		vscode.commands.executeCommand('michal.exitMarkMode');
+		const doc = vscode.window.activeTextEditor.document
+
+		const new_selections: vscode.Selection[] = [];
+		const column = this.getCurrentColumn();
+		for (let line = startLine; line <= endLine; line++) {
+			const pos = new vscode.Position(line, Math.min(editor.document.lineAt(line).text.length, column));
+			new_selections.push(new vscode.Selection(pos, pos));
+		}
+		editor.selections = new_selections;
+	}
 	async test(): Promise<void> {
-		// this.toggleFold()
-		let level = this.getIndentLevelBasedOnCursorLocation();
-		const lineNumber = vscode.window.activeTextEditor.selection.active.line;
-		let line =  vscode.window.activeTextEditor.document.lineAt(lineNumber)
-		this.showMessage(`${this.getIndentLevelBasedOnCursorLocation()} ${line.firstNonWhitespaceCharacterIndex} `)
+		// const editor = vscode.window.activeTextEditor
+		// const selection = editor.selection;
+		// this.showMessage(`${startLine}  ${endLine}`)
+		// // // this.toggleFold()
+		// // let level = this.getIndentLevelBasedOnCursorLocation();
+		// // const lineNumber = vscode.window.activeTextEditor.selection.active.line;
+		// // let line =  vscode.window.activeTextEditor.document.lineAt(lineNumber)
+		// // this.showMessage(`${this.getIndentLevelBasedOnCursorLocation()} ${line.firstNonWhitespaceCharacterIndex} `)
+		// // this.showMessage(this.getVisibleLines().toString())
+
+		// // let visibleLines = this.getVisibleLines();
+		// // let currentLine = this.getCurrentPos().line
+		// // const currentLineFromTop = visibleLines.indexOf(currentLine)
+		// // this.showMessage(`${visibleLines.indexOf(currentLine)}`)
+
+		// // this.showLineAtTop(331)
+		// // vscode.Position().translate(0, 1) - next character
+		// // vscode.Position
+		// // vscode.getCurrentPos()
+		
+		// if (this.counter == 0) {
+		// 	this.position = this.getCurrentPos();	
+		// } else {
+		// 	this.position = this.advancePosition(this.position, 1) //- next character
+		// }
+		// this.showMessage(`Current position is: ${this.position.line}, ${this.position.character}`);
+		
+		// // this.counter += 1;
+		// // vscode.
+		// // import { MoveOperations } from 'vs/editor/common/cursor/cursorMoveOperations';
+		// // import { Position } from 'vs/editor/common/core/position';
 	}
 }
 
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
