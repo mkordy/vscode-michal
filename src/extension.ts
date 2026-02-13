@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import {Operation} from './operation';
+import {Highlight} from './highlight';
 
 var inMarkMode: boolean = false;
 var markHasMoved: boolean = false;
@@ -9,8 +10,10 @@ function getLastNamePart(str: string): string {
     return parts[parts.length - 1]; // 'indentLines'
 }
 
+const outputChannel = vscode.window.createOutputChannel("Michal");
+
 export function activate(context: vscode.ExtensionContext): void {
-    let op = new Operation(),
+    let op = new Operation(outputChannel),
         commandList: string[] = [
             "C-g",
 
@@ -76,6 +79,7 @@ export function activate(context: vscode.ExtensionContext): void {
     });
 
     initMarkMode(context);
+    initHighlight(context);
 }
 
 export function deactivate(): void {
@@ -156,5 +160,29 @@ function initSelection(): void {
     vscode.window.activeTextEditor.selections = vscode.window.activeTextEditor.selections.map(selection => {
         const currentPosition: vscode.Position = selection.active;
         return new vscode.Selection(currentPosition, currentPosition);
+    });
+}
+
+function initHighlight(context: vscode.ExtensionContext): void {
+    let highlight: Highlight = new Highlight();
+
+    context.subscriptions.push(vscode.commands.registerCommand('michal.highlight.selectedWords', () => {
+        highlight.SelectedWords();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('michal.highlight.clearWords', () => {
+        highlight.ClearWords();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('michal.highlight.clearLastWord', () => {
+        highlight.ClearLastWord();
+    }));
+
+    vscode.workspace.onDidChangeTextDocument(() => {
+        highlight.RefeshSelectedWords();
+    });
+
+    vscode.window.onDidChangeActiveTextEditor(() => {
+        highlight.DecorateSelectedWords();
     });
 }

@@ -1,11 +1,12 @@
 import {Editor} from './editor';
+import * as vscode from 'vscode';
 
 export class Operation {
     public editor: Editor;
     private commandList: { [key: string]: (...args: any[]) => any, thisArgs?: any } = {};
 
-    constructor() {
-        this.editor = new Editor();
+    constructor(outputChannel: vscode.OutputChannel) {
+        this.editor = new Editor(outputChannel);
         this.commandList = {
             'C-k': () => {
                 this.editor.kill();

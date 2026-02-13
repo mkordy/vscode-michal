@@ -11,6 +11,7 @@ export class Editor {
 	private lastKill: vscode.Position // if kill position stays the same, append to clipboard
 	private justDidKill: boolean
 	private centerState: RecenterPosition
+	private outputChannel: vscode.OutputChannel
 
 	private folded: boolean = false
 	private justDidFolding: boolean = false
@@ -21,10 +22,11 @@ export class Editor {
 	private counter = 0
 	private position
 
-	constructor() {
+	constructor(outputChannel: vscode.OutputChannel) {
 		this.justDidKill = false
 		this.lastKill = null
 		this.centerState = RecenterPosition.Middle
+		this.outputChannel = outputChannel
 
 		vscode.window.onDidChangeActiveTextEditor(event => {
 			this.lastKill = null
@@ -37,13 +39,13 @@ export class Editor {
 			}
 			this.justDidKill = false
 			this.justDidFolding = false
-			if (this.removeMarkOnEdit) {
-				vscode.commands.executeCommand('michal.exitMarkModeOnEdit'); // -- fix that to not execute it after block comment or block indent
-			}
+			// if (this.removeMarkOnEdit) {
+			// 	vscode.commands.executeCommand('michal.exitMarkModeOnEdit'); // -- fix that to not execute it after block comment or block indent
+			// }
 		})
-		vscode.window.onDidChangeTextEditorSelection(event => {
-			this.centerState = RecenterPosition.Middle
-		})
+		// vscode.window.onDidChangeTextEditorSelection(event => {
+		// 	this.centerState = RecenterPosition.Middle
+		// })
 	}
 
 	async executeWithoutRemovingMark(command: string): Promise<void> {
@@ -267,12 +269,16 @@ export class Editor {
 		vscode.window.showInformationMessage(message);
 	}
 
+	log(message: string): void {
+        this.outputChannel.appendLine(message);
+    }
+
 	async jupyterExecCodeAboveInteractive(): Promise<void> {
 		this.executeCodeInJupyter(this.getTextFromTopToHere());
 	}
 
 	async executeCodeInJupyter(code: string): Promise<void> {
-		vscode.commands.executeCommand("jupyter.execSelectionInteractive", code);
+		await vscode.commands.executeCommand("jupyter.execSelectionInteractive", code).then(() => {this.log("Executed code in Jupyter")});
 	}	
 	
 	async jupyterExecLineOrRegionAndMaybeStep(): Promise<void> {
@@ -384,6 +390,17 @@ export class Editor {
 		editor.selections = new_selections;
 	}
 	async test(): Promise<void> {
+		this.showMessage("changed")
+		this.log("log test")
+		// const tab_names = vscode.window.visibleTextEditors.map(editor => editor.document.fileName)
+		
+		// for (const editor of vscode.window.visibleTextEditors) {
+		// 	this.showMessage(editor.document.fileName)
+		// 	sleep(100)
+		// }
+		// this.showMessage(vscode.window.visibleTextEditors.length.toString())
+		// vscode.window.cre
+		// this.showMessage(tab_names.toString())
 		// const editor = vscode.window.activeTextEditor
 		// const selection = editor.selection;
 		// this.showMessage(`${startLine}  ${endLine}`)

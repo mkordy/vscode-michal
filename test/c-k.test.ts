@@ -5,11 +5,11 @@ import * as utils from './utils'
 import {Editor} from '../src/editor'
 
 suite("C-K functionality", () => {
-
+    const outputChannel = vscode.window.createOutputChannel("Michal");
     test("EOL behavior", async () => {
 
         let c = "line 1\nline 2\nline 3\n",
-            e = new Editor()
+            e = new Editor(outputChannel)
 
         let doc = await vscode.workspace.openTextDocument({content: c, language: 'text'})
         await vscode.window.showTextDocument(doc)
