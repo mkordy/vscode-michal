@@ -30,258 +30,171 @@
 	],
 	"main": "./out/src/extension",
 	"contributes": {
-		"keybindings": [
-			{
-				"key": "right",
-				"command": "michal.cursorRight",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "right",
-				"command": "michal.cursorRight",
-				"when": "terminalFocus"
-			},
-			{
-				"key": "left",
-				"command": "michal.cursorLeft",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "left",
-				"command": "michal.cursorLeft",
-				"when": "terminalFocus"
-			},
-			{
-				"key": "down",
-				"command": "michal.cursorDown",
-				"when": "terminalFocus"
-			},
-			{
-				"key": "down",
-				"command": "michal.cursorDown",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "up",
-				"command": "michal.cursorUp",
-				"when": "terminalFocus"
-			},
-			{
-				"key": "up",
-				"command": "michal.cursorUp",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "home",
-				"command": "michal.cursorHome",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "home",
-				"command": "michal.cursorHome",
-				"when": "terminalFocus"
-			},
-			{
-				"key": "end",
-				"command": "michal.cursorEnd",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "end",
-				"command": "michal.cursorEnd",
-				"when": "terminalFocus"
-			},
-			{
-				"key": "ctrl+shift+alt+q ctrl+right",
-				"command": "michal.cursorWordRight"
-			},
-			{
-				"key": "ctrl+right",
-				"command": "michal.cursorWordPartRight"
-			},
-			{
-				"key": "ctrl+shift+alt+q ctrl+left",
-				"command": "michal.cursorWordLeft"
-			},
-			{
-				"key": "ctrl+left",
-				"command": "michal.cursorWordPartLeft"
-			},
-			{
-				"key": "alt+o",
-				"command": "michal.cursorBottom",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "alt+u",
-				"command": "michal.cursorTop",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "alt+g",
-				"command": "workbench.action.gotoLine"
-			},
-			{
-				"key": "ctrl+y",
-				"command": "editor.action.startFindReplaceAction",
-				"when": "editorFocus"
-			},
-			{
-				"command": "editor.action.replaceOne",
-				"key": "ctrl+enter",
-				"when": "editorFocus && findWidgetVisible"
-			},
-			{
-				"key": "ctrl+f",
-				"command": "actions.find",
-				"when": "textInputFocus && findWidgetVisible"
-			},
-			{
-				"key": "pagedown",
-				"command": "editor.action.nextMatchFindAction",
-				"when": "findWidgetVisible"
-			},
-			{
-				"key": "ctrl+f",
-				"command": "actions.find",
-				"when": "!findWidgetVisible"
-			},
-			{
-				"key": "ctrl+f",
-				"command": "actions.find",
-				"when": "textInputFocus && findWidgetVisible"
-			},
-			{
-				"key": "pageup",
-				"command": "editor.action.previousMatchFindAction",
-				"when": "findWidgetVisible"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "michal.C-g",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeFindWidget",
-				"when": "editorFocus && findWidgetVisible"
-			},
-
-			{
-				"key": "ctrl+g",
-				"command": "michal.exitMarkMode",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeReferenceSearchEditor",
-				"when": "inReferenceSearchEditor && !config.editor.stablePeek"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeReferenceSearch",
-				"when": "referenceSearchVisible && !config.editor.stablePeek"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeBreakpointWidget",
-				"when": "breakpointWidgetVisible && editorFocus"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "leaveSnippet",
-				"when": "editorTextFocus && inSnippetMode"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeMarkersNavigation",
-				"when": "editorFocus && markersNavigationVisible"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeParameterHints",
-				"when": "editorTextFocus && parameterHintsVisible"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "hideSuggestWidget",
-				"when": "editorTextFocus && suggestWidgetVisible"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "cancelRenameInput",
-				"when": "editorFocus && renameInputVisible"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeAccessibilityHelp",
-				"when": "accessibilityHelpWidgetVisible && editorFocus"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "closeReplaceInFilesWidget",
-				"when": "replaceInputBoxFocus && searchViewletVisible"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "workbench.action.closeMessages",
-				"when": "globalMessageVisible"
-			},
-			{
-				"key": "ctrl+g",
-				"command": "workbench.action.closeQuickOpen",
-				"when": "inQuickOpen"
-			},
-			{
-				"key": "ctrl+space",
-				"command": "michal.enterMarkMode",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "ctrl+enter",
-				"command": "michal.jupyterExecLineOrRegionAndMaybeStep",
-				"when": "editorTextFocus && !findWidgetVisible && isWorkspaceTrusted &&  !findInputFocussed && !isCompositeNotebook && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
-			},
-			{
-				"key": "ctrl+s ctrl+shift+alt+w",
-				"command": "michal.jupyterExecCodeAboveInteractive",
-				"when": "editorTextFocus && !findWidgetVisible && isWorkspaceTrusted &&  !findInputFocussed && !isCompositeNotebook && !notebookEditorFocused && !replaceInputFocussed && editorLangId == 'python'"
-			},
-			{
-				"key": "ctrl+alt+;",
-				"command": "michal.toggleFold",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "ctrl+alt+,",
-				"command": "michal.getMultilineFromRegion",
-				"when": "editorFocus"
-			},
-			{
-				"key": "ctrl+shift+alt+w",
-				"command": "michal.highlight.selectedWords"
-			},
-			{
-				"key": "alt+w",
-				"command": "michal.highlight.clearLastWord"
-			}
-		],
+		"keybindings": [],
 		"commands": [
 			{
 				"command": "michal.test",
-				"title": "michal.test"
+				"title": "Michal: Test"
+			},
+			{
+				"command": "michal.C-g",
+				"title": "Michal: Cancel (C-g)"
+			},
+			{
+				"command": "michal.C-k",
+				"title": "Michal: Kill Line (C-k)"
+			},
+			{
+				"command": "michal.C-w",
+				"title": "Michal: Cut (C-w)"
+			},
+			{
+				"command": "michal.copy",
+				"title": "Michal: Copy"
+			},
+			{
+				"command": "michal.C-y",
+				"title": "Michal: Paste (C-y)"
+			},
+			{
+				"command": "michal.C-x_C-o",
+				"title": "Michal: Delete Blank Lines (C-x C-o)"
+			},
+			{
+				"command": "michal.C-/",
+				"title": "Michal: Undo (C-/)"
+			},
+			{
+				"command": "michal.C-j",
+				"title": "Michal: Newline (C-j)"
+			},
+			{
+				"command": "michal.C-S_bs",
+				"title": "Michal: Kill Whole Line (C-S-Backspace)"
+			},
+			{
+				"command": "michal.C-l",
+				"title": "Michal: Recenter (C-l)"
+			},
+			{
+				"command": "michal.jupyterExecCodeAboveInteractive",
+				"title": "Michal: Jupyter Execute Code Above Interactive"
+			},
+			{
+				"command": "michal.jupyterExecLineOrRegionAndMaybeStep",
+				"title": "Michal: Jupyter Execute Line or Region"
+			},
+			{
+				"command": "michal.toggleFold",
+				"title": "Michal: Toggle Fold"
+			},
+			{
+				"command": "michal.getMultilineFromRegion",
+				"title": "Michal: Get Multiline From Region"
+			},
+			{
+				"command": "michal.cursorUp",
+				"title": "Michal: Cursor Up"
+			},
+			{
+				"command": "michal.cursorDown",
+				"title": "Michal: Cursor Down"
+			},
+			{
+				"command": "michal.cursorLeft",
+				"title": "Michal: Cursor Left"
+			},
+			{
+				"command": "michal.cursorRight",
+				"title": "Michal: Cursor Right"
+			},
+			{
+				"command": "michal.cursorHome",
+				"title": "Michal: Cursor Home"
+			},
+			{
+				"command": "michal.cursorEnd",
+				"title": "Michal: Cursor End"
+			},
+			{
+				"command": "michal.cursorWordLeft",
+				"title": "Michal: Cursor Word Left"
+			},
+			{
+				"command": "michal.cursorWordRight",
+				"title": "Michal: Cursor Word Right"
+			},
+			{
+				"command": "michal.cursorWordPartLeft",
+				"title": "Michal: Cursor Word Part Left"
+			},
+			{
+				"command": "michal.cursorWordPartRight",
+				"title": "Michal: Cursor Word Part Right"
+			},
+			{
+				"command": "michal.cursorPageDown",
+				"title": "Michal: Cursor Page Down"
+			},
+			{
+				"command": "michal.cursorPageUp",
+				"title": "Michal: Cursor Page Up"
+			},
+			{
+				"command": "michal.cursorTop",
+				"title": "Michal: Cursor Top"
+			},
+			{
+				"command": "michal.cursorBottom",
+				"title": "Michal: Cursor Bottom"
+			},
+			{
+				"command": "michal.indentLines",
+				"title": "Michal: Indent Lines"
+			},
+			{
+				"command": "michal.outdent",
+				"title": "Michal: Outdent"
+			},
+			{
+				"command": "michal.addCommentLine",
+				"title": "Michal: Add Comment"
+			},
+			{
+				"command": "michal.removeCommentLine",
+				"title": "Michal: Remove Comment"
+			},
+			{
+				"command": "michal.undo",
+				"title": "Michal: Undo"
+			},
+			{
+				"command": "michal.redo",
+				"title": "Michal: Redo"
+			},
+			{
+				"command": "michal.enterMarkMode",
+				"title": "Michal: Enter Mark Mode"
+			},
+			{
+				"command": "michal.exitMarkMode",
+				"title": "Michal: Exit Mark Mode"
+			},
+			{
+				"command": "michal.exitMarkModeOnEdit",
+				"title": "Michal: Exit Mark Mode On Edit"
 			},
 			{
 				"command": "michal.highlight.selectedWords",
-				"title": "Highlight Selected Words"
+				"title": "Michal: Highlight Selected Words"
 			},
 			{
 				"command": "michal.highlight.clearWords",
-				"title": "Clear Highlight Words"
+				"title": "Michal: Clear All Highlighted Words"
 			},
 			{
 				"command": "michal.highlight.clearLastWord",
-				"title": "Clear Last Highlighted Word"
+				"title": "Michal: Clear Last Highlighted Word"
 			}
 		],
 		"configuration": [
@@ -323,7 +236,7 @@
 								"light": "#d1e0e0",
 								"dark": "#F4D03F"
 							},
-														{
+							{
 								"light": "#FFCCCC",
 								"dark": "#F5B041"
 							}
