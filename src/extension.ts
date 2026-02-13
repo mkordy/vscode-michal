@@ -37,9 +37,19 @@ export function activate(context: vscode.ExtensionContext): void {
             "cursorUp", "cursorDown", "cursorLeft", "cursorRight",
             "cursorHome", "cursorEnd",
             "cursorWordLeft", "cursorWordRight",
-            "cursorWordPartLeft", "cursorWordPartRight",
             "cursorPageDown", "cursorPageUp",
+            "cursorWordPartLeft", "cursorWordPartRight",
             "cursorTop", "cursorBottom"
+        ],
+        // These cursor moves have custom implementations
+        customCursorMoves: string[] = [
+            "editorCursorWordPartLeft", "editorCursorWordPartRight",           
+            "editorCursorWordLeft", "editorCursorWordRight"            
+        ],
+        // These delete commands have custom implementations
+        customDeleteCommands: string[] = [
+            "editorDeleteWordPartLeft", "editorDeleteWordPartRight",
+            "editorDeleteWordLeft", "editorDeleteWordRight"
         ],
         commandsThatDoNotRemoveMark: string[] = [
             'editor.action.indentLines',
@@ -74,6 +84,27 @@ export function activate(context: vscode.ExtensionContext): void {
                     element+"Select" :
                     element
                 );
+            })
+        )
+    });
+
+    // Custom cursor moves with custom implementations
+    customCursorMoves.forEach(element => {
+        context.subscriptions.push(vscode.commands.registerCommand(
+            "michal."+element, () => {
+                if (inMarkMode) {
+                    markHasMoved = true;
+                }
+                op.editor.customCursorMove(element, inMarkMode);
+            })
+        )
+    });
+
+    // Custom delete commands with custom implementations
+    customDeleteCommands.forEach(element => {
+        context.subscriptions.push(vscode.commands.registerCommand(
+            "michal."+element, () => {
+                op.editor.customDelete(element);
             })
         )
     });

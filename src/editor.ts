@@ -53,6 +53,268 @@ export class Editor {
 		await vscode.commands.executeCommand(command)
 		this.removeMarkOnEdit = true
 	}
+
+	customCursorMove(command: string, inMarkMode: boolean): void {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) return;
+
+		const doc = editor.document;
+		const newSelections: vscode.Selection[] = [];
+
+		for (const selection of editor.selections) {
+			const pos = selection.active;
+			let newPos: vscode.Position;
+			if (command === "editorCursorWordPartRight") {
+				newPos = this.findWordPartEndRight(pos);
+			} else if (command === "editorCursorWordPartLeft") {
+				newPos = this.findWordPartStartLeft(pos);
+			} else if (command === "editorCursorWordRight") {
+				newPos = this.findWordEndRight(pos);
+			} else if (command === "editorCursorWordLeft") {
+				newPos = this.findWordStartLeft(pos);
+			} else {
+				newPos = pos;
+			}
+
+			if (inMarkMode) {
+				// Extend selection from anchor to new position
+				newSelections.push(new vscode.Selection(selection.anchor, newPos));
+			} else {
+				// Move cursor without selection
+				newSelections.push(new vscode.Selection(newPos, newPos));
+			}
+		}
+
+		editor.selections = newSelections;
+		editor.revealRange(new vscode.Range(newSelections[0].active, newSelections[0].active));
+	}
+
+	async customDelete(command: string): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) return;
+
+		const edits: vscode.Range[] = [];
+
+		for (const selection of editor.selections) {
+			const pos = selection.active;
+			let targetPos: vscode.Position;
+
+			if (command === "editorDeleteWordPartRight") {
+				targetPos = this.findWordPartEndRight(pos);
+				edits.push(new vscode.Range(pos, targetPos));
+			} else if (command === "editorDeleteWordPartLeft") {
+				targetPos = this.findWordPartStartLeft(pos);
+				edits.push(new vscode.Range(targetPos, pos));
+			} else if (command === "editorDeleteWordRight") {
+				targetPos = this.findWordEndRight(pos);
+				edits.push(new vscode.Range(pos, targetPos));
+			} else if (command === "editorDeleteWordLeft") {
+				targetPos = this.findWordStartLeft(pos);
+				edits.push(new vscode.Range(targetPos, pos));
+			}
+		}
+
+		// Sort edits from end to start to avoid position shifts when ranges overlap
+		edits.sort((a, b) => b.start.compareTo(a.start));
+
+		// Merge overlapping ranges
+		const mergedEdits: vscode.Range[] = [];
+		for (const range of edits) {
+			if (mergedEdits.length === 0) {
+				mergedEdits.push(range);
+			} else {
+				const last = mergedEdits[mergedEdits.length - 1];
+				// Check if ranges overlap or are adjacent (last.start <= range.end since sorted descending)
+				if (last.start.isBeforeOrEqual(range.end)) {
+					// Merge: extend to cover both ranges
+					mergedEdits[mergedEdits.length - 1] = new vscode.Range(
+						range.start.isBefore(last.start) ? range.start : last.start,
+						last.end.isAfter(range.end) ? last.end : range.end
+					);
+				} else {
+					mergedEdits.push(range);
+				}
+			}
+		}
+
+		await editor.edit(editBuilder => {
+			for (const range of mergedEdits) {
+				editBuilder.delete(range);
+			}
+		});
+	}
+	
+	isWordEnd(prevChar: string, currChar: string): boolean {
+		const prevIsWord = /\w/.test(prevChar);
+		const currIsWord = /\w/.test(currChar);
+		return !currIsWord && prevIsWord;
+	}
+
+	isWordPartEnd(prevChar: string, currChar: string): boolean {
+		const prevIsWord = /\w/.test(prevChar);
+		const currIsWord = /\w/.test(currChar);
+		if (!prevIsWord) {
+			return false;
+		}
+		// prevIsWord
+		if (!currIsWord) {  
+			return true;
+		}
+		// prevIsWord && currIsWord
+		// word is [a-zA-Z0-9_]
+		// Both are word characters - check for camelCase, digits, underscores
+		const prevIsUpper = /[A-Z]/.test(prevChar);
+		const currIsUpper = /[A-Z]/.test(currChar);
+		
+		const prevIsLower = /[a-z]/.test(prevChar);
+		const currIsLower = /[a-z]/.test(currChar);
+		const prevIsDigit = /[0-9]/.test(prevChar);
+		const currIsDigit = /[0-9]/.test(currChar);
+		const prevIsUnderscore = prevChar === '_';
+		const currIsUnderscore = currChar === '_';
+
+		if (prevIsUnderscore) {
+			return false;
+		}
+		// !prevIsUnderscore
+		if (currIsUnderscore) {
+			return true;
+		} 
+		// both are word but not underscore is [a-zA-Z0-9]
+		if (prevIsDigit != currIsDigit) {
+			return true;
+		}
+		if (prevIsDigit && currIsDigit) {
+			return false;
+		}
+		// both are [a-zA-Z]
+		if (prevIsLower && currIsUpper ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	isWordStart(prevChar: string, currChar: string): boolean {
+		const prevIsWord = /\w/.test(prevChar);
+		const currIsWord = /\w/.test(currChar);
+		return (currIsWord && !prevIsWord);
+	}
+
+	isWordPartStart(prevChar: string, currChar: string): boolean {
+		const prevIsWord = /\w/.test(prevChar);
+		const currIsWord = /\w/.test(currChar);
+		if (!currIsWord) {
+			return false;
+		}
+		// currIsWord
+		if (!prevIsWord) {  
+			return true;
+		}
+		// prevIsWord && currIsWord
+		// word is [a-zA-Z0-9_]
+		// Both are word characters - check for camelCase, digits, underscores
+		const prevIsUpper = /[A-Z]/.test(prevChar);
+		const currIsUpper = /[A-Z]/.test(currChar);
+		
+		const prevIsLower = /[a-z]/.test(prevChar);
+		const currIsLower = /[a-z]/.test(currChar);
+		const prevIsDigit = /[0-9]/.test(prevChar);
+		const currIsDigit = /[0-9]/.test(currChar);
+		const prevIsUnderscore = prevChar === '_';
+		const currIsUnderscore = currChar === '_';
+
+		if (currIsUnderscore) {
+			return false;
+		}
+		// !currIsUnderscore
+		if (prevIsUnderscore) {
+			return true;
+		} 
+		// both are word but not underscore is [a-zA-Z0-9]
+		if (prevIsDigit != currIsDigit) {
+			return true;
+		}
+		if (prevIsDigit && currIsDigit) {
+			return false;
+		}
+		// both are [a-zA-Z]
+		if (prevIsLower && currIsUpper ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	getCharAt(pos: vscode.Position): string {
+		const doc = vscode.window.activeTextEditor.document;
+		return doc.lineAt(pos.line).text[pos.character] || '';
+	}
+
+	private findWordPartEndRight(pos: vscode.Position): vscode.Position {
+		let next_pos = pos;
+		while (true) {
+			next_pos = this.nextPosition(pos);
+			if (next_pos == null) {
+				return pos;
+			}
+			if (this.isWordPartEnd(this.getCharAt(pos), this.getCharAt(next_pos))) {
+				return next_pos;
+			}
+			pos = next_pos;
+		}	
+	}
+
+	private findWordPartStartLeft(pos: vscode.Position): vscode.Position {
+		let prev_pos = this.prevPosition(pos);
+        if (prev_pos == null) {
+			return pos;
+		}
+		pos = prev_pos;
+		while(true) {
+			prev_pos = this.prevPosition(pos);
+			if (prev_pos == null) {
+				return pos;
+			}
+			if (this.isWordPartStart(this.getCharAt(prev_pos), this.getCharAt(pos))) {
+				return pos;
+			}
+			pos = prev_pos;
+		}
+	}
+
+	private findWordEndRight(pos: vscode.Position): vscode.Position {
+		let next_pos = pos;
+		while (true) {
+			next_pos = this.nextPosition(pos);
+			if (next_pos == null) {
+				return pos;
+			}
+			if (this.isWordEnd(this.getCharAt(pos), this.getCharAt(next_pos))) {
+				return next_pos;
+			}
+			pos = next_pos;
+		}	
+	}
+
+	private findWordStartLeft(pos: vscode.Position): vscode.Position {
+		let prev_pos = this.prevPosition(pos);
+        if (prev_pos == null) {
+			return pos;
+		}
+		pos = prev_pos;
+		while(true) {
+			prev_pos = this.prevPosition(pos);
+			if (prev_pos == null) {
+				return pos;
+			}
+			if (this.isWordStart(this.getCharAt(prev_pos), this.getCharAt(pos))) {
+				return pos;
+			}
+			pos = prev_pos;
+		}
+	}
+	// fdf  fdfd_fdfd___fdfd   dfdfAlaMaKotaAAdf
 	
 	static isOnLastLine(): boolean {
 		return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
@@ -106,6 +368,36 @@ export class Editor {
 
 	getCurrentPos(): vscode.Position {
 		return vscode.window.activeTextEditor.selection.active
+	}
+
+	/**
+	 * Advances a position by one character, moving to the next line if at end of line.
+	 * Returns null if at end of document.
+	 */
+	nextPosition(pos: vscode.Position): vscode.Position | null {
+		const doc = vscode.window.activeTextEditor.document;
+		const lineText = doc.lineAt(pos.line).text;
+		if (pos.character < lineText.length) {
+			return new vscode.Position(pos.line, pos.character + 1);
+		} else if (pos.line < doc.lineCount - 1) {
+			return new vscode.Position(pos.line + 1, 0);
+		}
+		return null; // At end of document
+	}
+
+	/**
+	 * Moves a position back by one character, moving to the previous line if at start of line.
+	 * Returns null if at start of document.
+	 */
+	prevPosition(pos: vscode.Position): vscode.Position | null {
+		const doc = vscode.window.activeTextEditor.document;
+		if (pos.character > 0) {
+			return new vscode.Position(pos.line, pos.character - 1);
+		} else if (pos.line > 0) {
+			const prevLineLength = doc.lineAt(pos.line - 1).text.length;
+			return new vscode.Position(pos.line - 1, prevLineLength);
+		}
+		return null; // At start of document
 	}
 	
 	getTopPos(): vscode.Position {
@@ -165,6 +457,7 @@ export class Editor {
 		} else {
 			vscode.env.clipboard.writeText(this.getSelectionText())
 		}
+		// ala ma kota
 		let t = Editor.delete(this.getSelectionRange());
 		vscode.commands.executeCommand("michal.exitMarkMode");
 		return t
@@ -364,10 +657,7 @@ export class Editor {
 		const range = editor.document.lineAt(line_number).range;
 		editor.revealRange(range,  vscode.TextEditorRevealType.AtTop);
 	}
-	advancePosition(position: vscode.Position, characterDelta: number) {
-		const doc = vscode.window.activeTextEditor.document
-		return doc.validatePosition(position.translate(0, characterDelta))
-	}
+
 	getMultilineFromRegion() {
 		const editor = vscode.window.activeTextEditor
 		const selections = editor.selections;

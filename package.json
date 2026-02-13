@@ -149,6 +149,38 @@
 				"title": "Michal: Cursor Bottom"
 			},
 			{
+				"command": "michal.editorCursorWordPartLeft",
+				"title": "Michal: Editor Cursor Word Part Left"
+			},
+			{
+				"command": "michal.editorCursorWordPartRight",
+				"title": "Michal: Editor Cursor Word Part Right"
+			},
+			{
+				"command": "michal.editorCursorWordLeft",
+				"title": "Michal: Editor Cursor Word Left"
+			},
+			{
+				"command": "michal.editorCursorWordRight",
+				"title": "Michal: Editor Cursor Word Right"
+			},
+			{
+				"command": "michal.editorDeleteWordPartLeft",
+				"title": "Michal: Editor Delete Word Part Left"
+			},
+			{
+				"command": "michal.editorDeleteWordPartRight",
+				"title": "Michal: Editor Delete Word Part Right"
+			},
+			{
+				"command": "michal.editorDeleteWordLeft",
+				"title": "Michal: Editor Delete Word Left"
+			},
+			{
+				"command": "michal.editorDeleteWordRight",
+				"title": "Michal: Editor Delete Word Right"
+			},
+			{
 				"command": "michal.indentLines",
 				"title": "Michal: Indent Lines"
 			},
