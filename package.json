@@ -296,10 +296,6 @@
 						"type": "array",
 						"default": [
 							{
-								"light": "#b3d9ff",
-								"dark": "#F5B041"
-							},
-							{
 								"light": "#e6ffb3",
 								"dark": "#FF9933"
 							},
@@ -326,6 +322,10 @@
 							{
 								"light": "#d1e0e0",
 								"dark": "#F4D03F"
+							},
+														{
+								"light": "#FFCCCC",
+								"dark": "#F5B041"
 							}
 						]
 					}
