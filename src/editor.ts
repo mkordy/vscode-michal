@@ -22,6 +22,9 @@ export class Editor {
 	private counter = 0
 	private position
 
+	// Track whether swiper search window is active
+	public isSwiperActive: boolean = false
+
 	constructor(outputChannel: vscode.OutputChannel) {
 		this.justDidKill = false
 		this.lastKill = null

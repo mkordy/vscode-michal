@@ -227,6 +227,10 @@
 			{
 				"command": "michal.highlight.clearLastWord",
 				"title": "Michal: Clear Last Highlighted Word"
+			},
+			{
+				"command": "michal.swiper",
+				"title": "Michal: Swiper Search"
 			}
 		],
 		"configuration": [
@@ -273,6 +277,16 @@
 								"dark": "#F5B041"
 							}
 						]
+					}
+				}
+			},
+			{
+				"title": "michal.swiper",
+				"properties": {
+					"michal.swiper.selectMatch": {
+						"type": "boolean",
+						"default": true,
+						"description": "Select the picked match text by swiper"
 					}
 				}
 			}

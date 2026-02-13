@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import {Operation} from './operation';
 import {Highlight} from './highlight';
+import {Swiper} from './swiper';
 
 var inMarkMode: boolean = false;
 var markHasMoved: boolean = false;
@@ -111,6 +112,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     initMarkMode(context);
     initHighlight(context);
+    initSwiper(context, op);
 }
 
 export function deactivate(): void {
@@ -214,4 +216,17 @@ function initHighlight(context: vscode.ExtensionContext): void {
     vscode.window.onDidChangeActiveTextEditor(() => {
         highlight.DecorateSelectedWords();
     });
+}
+
+function initSwiper(context: vscode.ExtensionContext, op: Operation): void {
+    const swiper = new Swiper();
+
+    // Connect swiper active state to Editor
+    swiper.onActiveChange((isActive) => {
+        op.editor.isSwiperActive = isActive;
+    });
+
+    context.subscriptions.push(vscode.commands.registerCommand('michal.swiper', () => {
+        swiper.swipe();
+    }));
 }
