@@ -130,9 +130,7 @@ function initMarkMode(context: vscode.ExtensionContext): void {
             const hasMultipleSelecitons = selections.length > 1;
             if (hasMultipleSelecitons) {
                 const allSelectionsAreEmpty = selections.every(selection => selection.isEmpty);
-                if (allSelectionsAreEmpty) {
-                    // vscode.commands.executeCommand("removeSecondaryCursors");
-                } else {
+                if (! allSelectionsAreEmpty) {
                     // initSelection() is used here instead of `executeCommand("cancelSelection")`
                     // because `cancelSelection` command not only cancels selection state
                     // but also removes secondary cursors though these should remain in this case.

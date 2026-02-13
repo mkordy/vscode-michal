@@ -39,9 +39,9 @@ export class Editor {
 			}
 			this.justDidKill = false
 			this.justDidFolding = false
-			// if (this.removeMarkOnEdit) {
-			// 	vscode.commands.executeCommand('michal.exitMarkModeOnEdit'); // -- fix that to not execute it after block comment or block indent
-			// }
+			if (this.removeMarkOnEdit) {
+				vscode.commands.executeCommand('michal.exitMarkModeOnEdit'); // -- fix that to not execute it after block comment or block indent
+			}
 		})
 		// vscode.window.onDidChangeTextEditorSelection(event => {
 		// 	this.centerState = RecenterPosition.Middle
