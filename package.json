@@ -231,6 +231,14 @@
 			{
 				"command": "michal.swiper",
 				"title": "Michal: Swiper Search"
+			},
+			{
+				"command": "michal.swiper.historyUp",
+				"title": "Michal: Swiper History Up"
+			},
+			{
+				"command": "michal.swiper.historyDown",
+				"title": "Michal: Swiper History Down"
 			}
 		],
 		"configuration": [

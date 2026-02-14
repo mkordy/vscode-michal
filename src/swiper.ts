@@ -2,39 +2,27 @@ import * as vscode from 'vscode';
 
 const isDebug = false;
 
+// Border colors for highlighting matches
+const borderColors = ["red", "cyan", "green", "yellow", "BlueViolet", "Fuchsia"];
+
 // Decoration styles for highlighting matches
-const styles = [
-    vscode.window.createTextEditorDecorationType({
+const styles = borderColors.map(function(color) {
+    return vscode.window.createTextEditorDecorationType({
         border: "solid",
         borderWidth: 'medium',
-        borderColor: "red"
-    }),
-    vscode.window.createTextEditorDecorationType({
+        borderColor: color
+    });
+});
+
+// Active versions of styles with yellow background for the currently selected line
+const activeStyles = borderColors.map(function(color) {
+    return vscode.window.createTextEditorDecorationType({
         border: "solid",
         borderWidth: 'medium',
-        borderColor: "cyan"
-    }),
-    vscode.window.createTextEditorDecorationType({
-        border: "solid",
-        borderWidth: 'medium',
-        borderColor: "green"
-    }),
-    vscode.window.createTextEditorDecorationType({
-        border: "solid",
-        borderWidth: 'medium',
-        borderColor: "yellow"
-    }),
-    vscode.window.createTextEditorDecorationType({
-        border: "solid",
-        borderWidth: 'medium',
-        borderColor: "BlueViolet"
-    }),
-    vscode.window.createTextEditorDecorationType({
-        border: "solid",
-        borderWidth: 'medium',
-        borderColor: "Fuchsia"
-    }),
-];
+        borderColor: color,
+        backgroundColor: "rgba(255, 255, 0, 0.3)"
+    });
+});
 
 const PROMPT_STRING = "type 2 or more chars to search";
 
@@ -60,6 +48,8 @@ interface SwiperState {
     lastSelected: SearchItem;
 }
 
+const MAX_HISTORY_SIZE = 50;
+
 // Callback type for notifying when swiper active state changes
 type SwiperActiveCallback = (isActive: boolean) => void;
 
@@ -71,12 +61,115 @@ export class Swiper {
 
     private _isActive: boolean = false;
     private onActiveChangeCallback: SwiperActiveCallback = null;
+    private currentItems: MatchedRange[] = [];
+    private currentActiveLine: number = -1;
+    
+    // History for previous search values
+    private history: string[] = [];
+    private historyIndex: number = -1;
+    private currentPick: vscode.QuickPick<SearchItem> = null;
+    private tempCurrentValue: string = ''; // Store current input when navigating history
 
     /**
      * Returns whether the swiper search window is currently active
      */
     get isActive(): boolean {
         return this._isActive;
+    }
+
+    /**
+     * Navigate to the previous (older) history entry
+     */  
+    historyUp(): void {
+        if (!this.currentPick || this.history.length === 0) {
+            return;
+        }
+        
+        // If we're starting to navigate history, save current input
+        if (this.historyIndex === -1) {
+            this.tempCurrentValue = this.currentPick.value;
+        }
+        
+        // Move to older entry, skipping entries that match current input
+        while (this.historyIndex < this.history.length - 1) {
+            this.historyIndex++;
+            if (this.history[this.historyIndex] !== this.currentPick.value) {
+                this.currentPick.value = this.history[this.historyIndex];
+                break;
+            }
+        }
+    }
+
+    showMessage(message: string): void {
+        vscode.window.showInformationMessage(message);
+    }
+
+    /**
+     * Navigate to the next (newer) history entry
+     */
+    historyDown(): void {
+        if (!this.currentPick) {
+            return;
+        }
+        
+        if (this.historyIndex > 0) {
+            // Move to newer entry
+            this.historyIndex--;
+            this.currentPick.value = this.history[this.historyIndex];
+        } else if (this.historyIndex === 0) {
+            // Return to current input
+            this.historyIndex = -1;
+            this.currentPick.value = this.tempCurrentValue;
+        }
+    }
+
+    /**
+     * Copy the line of the currently active search result to clipboard
+     */
+    copyCurrentLine(): void {
+        if (!this.currentPick) {
+            return;
+        }
+
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+
+        const activeItems = this.currentPick.activeItems;
+        if (activeItems.length === 0) {
+            return;
+        }
+
+        const currentItem = activeItems[0] as SearchItem;
+        const lineText = editor.document.lineAt(currentItem.line).text;
+        
+        vscode.env.clipboard.writeText(lineText).then(() => {
+            vscode.window.showInformationMessage('Line copied to clipboard');
+        });
+    }
+
+    /**
+     * Add a search value to history (avoiding duplicates)
+     */
+    private addToHistory(value: string): void {
+        if (!value || value === PROMPT_STRING || value.length < 2) {
+            return;
+        }
+        
+        // Remove if already exists to avoid duplicates
+        const existingIndex = this.history.indexOf(value);
+        if (existingIndex !== -1) {
+            this.history.splice(existingIndex, 1);
+        }
+        
+        // Add to front of history
+        this.history.unshift(value);
+        
+        // Keep history size bounded
+        if (this.history.length > MAX_HISTORY_SIZE) {
+            this.history.pop();
+        }
     }
 
     /**
@@ -88,6 +181,7 @@ export class Swiper {
 
     private setActive(active: boolean): void {
         this._isActive = active;
+        vscode.commands.executeCommand('setContext', 'michal.swiperFocus', active);
         if (this.onActiveChangeCallback) {
             this.onActiveChangeCallback(active);
         }
@@ -195,6 +289,7 @@ export class Swiper {
             };
         });
 
+        let activeLine: number = -1;
         if (this.state.lastValue === searchStr && this.state.lastSelected) {
             const lastSelected = this.state.lastSelected;
             const found = pick.items.find(function(it) {
@@ -202,6 +297,7 @@ export class Swiper {
             });
             if (found) {
                 pick.activeItems = [found];
+                activeLine = found.line;
             }
         } else if (initialCursorLine !== undefined) {
             const firstMatchBelow = pick.items.find(function(it) {
@@ -209,9 +305,15 @@ export class Swiper {
             });
             if (firstMatchBelow) {
                 pick.activeItems = [firstMatchBelow];
+                activeLine = firstMatchBelow.line;
+            } else if (pick.items.length > 0) {
+                // No match at or after cursor, use the closest match before cursor (last item)
+                const lastItem = pick.items[pick.items.length - 1];
+                pick.activeItems = [lastItem];
+                activeLine = lastItem.line;
             }
         }
-        this.updateMatchColor(items);
+        this.updateMatchColor(items, activeLine >= 0 ? activeLine : undefined);
     }
 
     private leftPad(lineN: number): string {
@@ -225,19 +327,31 @@ export class Swiper {
         styles.forEach(function(s) {
             editor.setDecorations(s, []);
         });
+        activeStyles.forEach(function(s) {
+            editor.setDecorations(s, []);
+        });
     }
 
-    private updateMatchColor(items: MatchedRange[]): void {
+    private updateMatchColor(items: MatchedRange[], activeLine?: number): void {
         this.clearDecorations();
         const editor = vscode.window.activeTextEditor;
         if (!editor) return;
 
+        // Store for re-coloring when active item changes
+        this.currentItems = items;
+        if (activeLine !== undefined) {
+            this.currentActiveLine = activeLine;
+        }
+
         const colors: vscode.Range[][] = [];
+        const activeColors: vscode.Range[][] = [];
         for (let c = 0; c < styles.length; c++) {
             colors.push([]);
+            activeColors.push([]);
         }
         
         for (const item of items) {
+            const isActive = item.line === this.currentActiveLine;
             for (let i = 0; i < item.ranges.length; i++) {
                 const range = item.ranges[i];
                 const start = range[0];
@@ -245,16 +359,22 @@ export class Swiper {
                 if (length === 0) {
                     continue;
                 }
-                colors[i % styles.length].push(
-                    new vscode.Range(
-                        new vscode.Position(item.line, start),
-                        new vscode.Position(item.line, start + length)
-                    )
+                const vscodeRange = new vscode.Range(
+                    new vscode.Position(item.line, start),
+                    new vscode.Position(item.line, start + length)
                 );
+                if (isActive) {
+                    activeColors[i % activeStyles.length].push(vscodeRange);
+                } else {
+                    colors[i % styles.length].push(vscodeRange);
+                }
             }
         }
-        for (let i = 0; i < colors.length; i++) {
+        
+        // Apply styles
+        for (let i = 0; i < styles.length; i++) {
             editor.setDecorations(styles[i], colors[i]);
+            editor.setDecorations(activeStyles[i], activeColors[i]);
         }
     }
 
@@ -305,6 +425,9 @@ export class Swiper {
             vscode.TextEditorRevealType.InCenter
         );
         editor.selection = new vscode.Selection(start, end);
+        
+        // Update decorations to highlight the active match differently
+        this.updateMatchColor(this.currentItems, focused.line);
     }
 
     /**
@@ -331,6 +454,9 @@ export class Swiper {
 
         const pick = vscode.window.createQuickPick<SearchItem>();
         const self = this;
+        this.currentPick = pick;
+        this.historyIndex = -1;
+        this.tempCurrentValue = '';
 
         pick.canSelectMany = false;
         pick.matchOnDescription = true;
@@ -351,6 +477,8 @@ export class Swiper {
             if (!selected) {
                 return;
             }
+            // Add to history on successful accept
+            self.addToHistory(pick.value);
             self.state = {
                 lastValue: pick.value,
                 lastSelected: selected
@@ -372,6 +500,7 @@ export class Swiper {
             self.resortCursorIfNoneSelected(pick, currentSelection);
             // Mark swiper as inactive
             self.setActive(false);
+            self.currentPick = null;
             pick.dispose();
         });
 

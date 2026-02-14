@@ -229,4 +229,16 @@ function initSwiper(context: vscode.ExtensionContext, op: Operation): void {
     context.subscriptions.push(vscode.commands.registerCommand('michal.swiper', () => {
         swiper.swipe();
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('michal.swiper.historyUp', () => {
+        swiper.historyUp();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('michal.swiper.historyDown', () => {
+        swiper.historyDown();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('michal.swiper.copyLine', () => {
+        swiper.copyCurrentLine();
+    }));
 }
